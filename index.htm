@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diário, eu acho</title>
+    <style>
+        /* Reset básico e Fontes */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body {
+            /* Camada de cor escura (rgba) + Imagem de fundo do Imgur */
+            background-image: 
+                linear-gradient(rgba(13, 13, 13, 0.85), rgba(13, 13, 13, 0.85)), 
+                url("https://i.imgur.com/m79XkX7.png");
+            
+            /* Faz a imagem repetir apenas verticalmente */
+            background-repeat: repeat-y; 
+            background-position: top center; 
+            background-size: auto; 
+            
+            color: #ffffff;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background-color: rgba(8, 8, 8, 0.3); 
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px); 
+            
+            border: 1px solid #1a1a1a;
+            padding: 30px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Estilo dos Blocos de Cabeçalho (Título e Introdução) */
+        .main-title {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid #18738f; 
+            border-radius: 15px 0 0 15px;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #18738f;
+        }
+
+        .intro-block {
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid #6c5ce7; 
+            border-radius: 15px 0 0 15px;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.05rem;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        /* Estilo dos Blocos de Texto com o "Efeito Parêntese" */
+        .text-item {
+            background: rgba(8, 8, 8, 0.65); 
+            backdrop-filter: blur(4px); 
+            -webkit-backdrop-filter: blur(4px);
+            
+            border-left: 3px solid #6c5ce7;
+            border-radius: 15px 0 0 15px;
+            padding: 20px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            transition: background 0.3s;
+        }
+
+        .text-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .text-item h3 {
+            color: #ff79c6; /* Rosa para subtítulos */
+            margin-bottom: 8px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Estilo para Box de Imagens */
+        .image-box {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid #1a1a1a;
+            border-radius: 6px;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .image-box figure {
+            width: 100%;
+            margin: 0;
+            text-align: center;
+        }
+
+        .image-box img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            display: block;
+            transition: transform 0.3s;
+        }
+
+        .image-box img:hover {
+            transform: scale(1.02); 
+        }
+
+        /* ========================================================
+           ESTILOS DA LINHA DO TEMPO (TIMELINE) + TAGS
+           ======================================================== */
+        .timeline-section {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .timeline-intro {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ff79c6;
+            margin-bottom: 25px;
+        }
+
+        .timeline-intro p {
+            font-size: 0.95rem;
+            color: #b3b3b3;
+            font-weight: normal;
+            margin-top: 8px;
+        }
+
+        .timeline-container {
+            position: relative;
+            padding-left: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 15px;
+            bottom: 15px;
+            left: 15px;
+            width: 2px;
+            background: rgba(108, 92, 231, 0.3);
+        }
+
+        .timeline-item {
+            position: relative;
+            width: 100%;
+        }
+
+        .timeline-badge {
+            position: absolute;
+            left: -32px;
+            top: 22px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        /* --- Cores das Tags (Bolinhas e Textos) --- */
+        .purple-dot {
+            background-color: #6c5ce7;
+            box-shadow: 0 0 8px #6c5ce7;
+        }
+        .purple-text {
+            color: #6c5ce7 !important;
+        }
+
+        .gold-dot {
+            background-color: #f1c40f;
+            box-shadow: 0 0 8px #f1c40f;
+        }
+        .gold-text {
+            color: #f1c40f !important;
+        }
+
+        .pink-dot {
+            background-color: #ff79c6;
+            box-shadow: 0 0 8px #ff79c6;
+        }
+        .pink-text {
+            color: #ff79c6 !important;
+        }
+
+        .timeline-card {
+            background: rgba(8, 8, 8, 0.65);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 20px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .timeline-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateX(3px);
+        }
+
+        .timeline-date {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .timeline-text {
+            font-size: 0.9rem;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .timeline-footer-note {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1rem;
+            color: #b3b3b3;
+            font-style: italic;
+        }
+
+        /* ========================================================
+           ESTILOS DO PLAYER DE ÁUDIO
+           ======================================================== */
+        .audio-container {
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid #ff79c6;
+            border-radius: 15px 0 0 15px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .audio-title {
+            font-size: 0.95rem;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        audio {
+            width: 100%;
+            max-width: 400px;
+            height: 40px;
+            border-radius: 20px;
+            filter: invert(90%) hue-rotate(180deg);
+            opacity: 0.85;
+            transition: opacity 0.3s;
+        }
+
+        audio:hover {
+            opacity: 1;
+        }
+
+        /* Rodapé */
+        .main-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+            color: #777777;
+            font-size: 0.8rem;
+            line-height: 1.6;
+        }
+
+        .main-footer .footer-sub {
+            color: #ff79c6;
+            font-size: 0.75rem;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Ajustes de Responsividade */
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            .container { padding: 15px; gap: 15px; }
+            .main-title { font-size: 1.25rem; padding: 15px 10px; }
+            .timeline-container { padding-left: 30px; }
+            .timeline-line { left: 10px; }
+            .timeline-badge { left: -27px; width: 12px; height: 12px; top: 18px; }
+            .timeline-card { padding: 15px; }
+            .timeline-text { font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="main-title">
+        📒 Caderno Tilibra
+    </div>
+
+    <div class="audio-container">
+        <div class="audio-title">🎵 Lembrei que vc gosta, pra acompanhar sua leitura da minha cabeça. 🎵</div>
+        <audio id="musica" controls src="https://www.dropbox.com/scl/fi/m422czecxph0i4svsb8cn/Tame-Impala-Borderline-Official-Audio-2g5xkLqIElU.mp3?rlkey=11q0cr98vjn96a5fm1r92x8k3&st=kl4fuy5s&raw=1" type="audio/mpeg">
+            Seu navegador não suporta o reprodutor de áudio.
+        </audio>
+        <script>
+            document.getElementById('musica').volume = 0.1;
+        </script>
+    </div>
+    
+    <div class="image-box">
+        <figure>
+            <img src="https://i.pinimg.com/1200x/ed/78/89/ed7889cf39737af385f79a9220000136.jpg" alt="Foto 1">
+            <figcaption style="color: #b3b3b3; font-size: 0.8rem; margin-top: 12px; font-style: italic;">
+                "Eu amo coisinhas gays"
+            </figcaption>
+        </figure>
+    </div>
+        
+    <div class="text-item" style="text-align: center;">
+        <h3 style="justify-content: center;"><span style="margin-right: 8px;">💭</span> Diário, eu acho</h3>
+        <p>
+            Nunca tive um diário, então acho que isso é o mais perto de um que eu tive/tenho;<br>Anoto coisas sobre você, eu e nós aqui dentro.<br>Se vc chegar a ler isso um dia; aqui é o meu lado mais honesto, mais do que eu ja fui contigo, sem esconder meus sentimentos, pensamentos ou qualquer coisa que eu tenha evitado expor.
+        </p>
+    </div>
+
+    <!-- SEÇÃO DA LINHA DO TEMPO -->
+    <div class="timeline-section">
+        <div class="timeline-intro">
+            💟 Atualizando...
+            <p>Vou mudando isso conforme o  tempo passa, não leve sentimentos antigos expostos aqui pro momento atual.<br>Eu escrevi oq sentia na época e como isso me deixou.</p>
+            <p style="font-size: 0.8rem; font-style: italic; color: #ff79c6; margin-top: 12px;"><br>09/06/2026<br>Eu to mexendo nisso aqui doente, me perdoa qualquer erro.<br> Oi, faz algum tempo né...</p>
+        </div>
+
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
+
+            <!-- Marco 1 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">27/04/2026</span>
+                    <p class="timeline-text">Primeiros contatos? (eu acho)</p>
+                </div>
+            </div>
+
+            <!-- Marco 2 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">11/05/2026</span>
+                    <p class="timeline-text">Troca de tiros justa</p>
+                </div>
+            </div>
+
+            <!-- Marco 3 (Destaque Dourado) -->
+            <div class="timeline-item">
+                <div class="timeline-badge gold-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date gold-text">12/05/2026</span>
+                    <p class="timeline-text">First kiss!</p>
+                </div>
+            </div>
+
+            <!-- Marco 4 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">13/05/2026 > 14/05/2026</span>
+                    <p class="timeline-text">Achei fofo a forma que vc me tratou e logo em seguida a mudança de temperatura</p>
+                </div>
+            </div>
+
+            <!-- Marco 5 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">14/05/2026</span>
+                    <p class="timeline-text">Um video bem diferente, diga-se de passagem</p>
+                </div>
+            </div>
+
+            <!-- Marco 6 (Destaque Dourado) -->
+            <div class="timeline-item">
+                <div class="timeline-badge gold-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date gold-text">15/05/2026</span>
+                    <p class="timeline-text">Saimos juntos!<br>Conheci pessoas importantes pra você, significou muito pra mim</p>
+                </div>
+            </div>
+
+            <!-- Marco 7 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">16/05/2026</span>
+                    <p class="timeline-text">Uhm<br>Inesperado de fato vc me dizer isso, mas que bom, é um sentimento mutuo.</p>
+                </div>
+            </div>
+
+            <!-- Marco 8 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">16/05/2026 > 17/05/2026</span>
+                    <p class="timeline-text">Não sei oq rolou, mas tudo bem, aceito qualquer coisa que te conforte.</p>
+                </div>
+            </div>
+
+            <!-- Marco 9 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">21/05/2026</span>
+                    <p class="timeline-text">Sou idiota, te tratei mal, te magoei e deixei tudo horrivel.</p>
+                </div>
+            </div>
+
+            <!-- Marco 10 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">22/05/2026</span>
+                    <p class="timeline-text">A idea do memorial nasceu aqui. Por isso a foto do gloss.</p>
+                </div>
+            </div>
+
+            <!-- Marco 11 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">23/05/2026</span>
+                    <p class="timeline-text">Vc tem ciumes de mim? Porquê?<br>Quais são os motivos pra isso?</p>
+                </div>
+            </div>
+
+            <!-- Marco 12 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">24/05/2026</span>
+                    <p class="timeline-text">Vc me chamando pra F1 KKKKKKKKKKK</p>
+                </div>
+            </div>
+
+            <!-- Marco 13 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">24/05/2026</span>
+                    <p class="timeline-text">Sinais de que ainda existe algo por mim, me confunde mas tudo bem.</p>
+                </div>
+            </div>
+
+            <!-- Marco 14 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">24/05/2026</span>
+                    <p class="timeline-text">Seu primeiro contato com meus textos<br>1346 foi um text o absurdo que eu escrevi, a forma mais genuina que eu pude esboçar meus sentimentos por alguém, transformados em um conjunto quase perfeito de expressão.</p>
+                </div>
+            </div>
+
+            <!-- Marco 15 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">25/05/2026</span>
+                    <p class="timeline-text">Não te odeio, só é confuso entender oq se passa.<br>Tu demonstra gostar de mim, mas evita essas interações por algum motivo (E tudo bem, não te julgo/odeio por isso)</p>
+                </div>
+            </div>
+
+            <!-- Marco 16 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">25/05/2026</span>
+                    <p class="timeline-text">Fui extremamente transparente com um assunto delicado pra mim. Grato por escutar.</p>
+                </div>
+            </div>
+
+            <!-- Marco 17 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">27/07/2026</span>
+                    <p class="timeline-text">Admito isso aq me abalou muito sentimentalmente, mas tudo bem, eu gosto de vc o bastante pra te ajudar a lidar com isso; depois eu lido com isso.</p>
+                </div>
+            </div>
+
+            <!-- Marco 18 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">28/05/2026</span>
+                    <p class="timeline-text">Saimos juntos de novo.<br>Mas vc ainda tava lidando com esse assunto, preferi escrever meus sentimentos (2009) pra n deixar isso afetar ninguém em volta; fora o fato do meu aniversário ser no dia seguinte que tava me deixando pior ainda.</p>
+                </div>
+            </div>
+
+            <!-- Marco 19 (Destaque Dourado) -->
+            <div class="timeline-item">
+                <div class="timeline-badge gold-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date gold-text">29/05/2026</span>
+                    <p class="timeline-text">Fiz 22.<br> Agradeço vc ter me feito companhia durante esse dia zoado pra mim; vi suas movimentações em direção a mim, sou grato por vc flexibilizar seu tempo pra garantir que eu ficasse bem.</p>
+                </div>
+            </div>
+
+            <!-- Marco 20 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">30/05/2026</span>
+                    <p class="timeline-text">Deixei meus pensamentos tomarem conta, falei mais do que deveria, mas expressei tudo que eu precisava e, você entendeu?; não sei mas fiquei mais leve depois disso.</p>
+                </div>
+            </div>
+
+            <!-- Marco 21 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">01/06/2026</span>
+                    <p class="timeline-text">Vc entendeu mal coisas que eu fiz, eu realmente gosto de vc, não te olhei de uma forma ruim</p>
+                </div>
+            </div>
+
+            <!-- Marco 22 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">03/06/2026</span>
+                    <p class="timeline-text">Mais um momento que vc deixou se levar e não expressou sua vontade de me contatar diretamente. Poderia ter dito, eu faria algo pra estar com você.</p>
+                </div>
+            </div>
+
+            <!-- Marco 23 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">03/06/2026 > 04/06/2026</span>
+                    <p class="timeline-text">Mais um sinal de que tem algo sentimental envolvido mas você não sabe oq fazer com ele. Expresse, eu não vou te magoar de novo, sumir, abandonar ou te tratar mal.<br><br>Eu vou ficar aqui, até que eu morra ou você se vá.</p>
+                </div>
+            </div>
+
+            <!-- Marco 24 (Destaque Rosa) -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">04/06/2026</span>
+                    <p class="timeline-text">Disse o que achei necessário, trouxe isso a tona pra saber sua opinião e você mudou de assunto...<br>Complexo, mas acredito que alguma hora eu consiga saber oq ta acontecendo.</p>
+                </div>
+            </div>
+
+            <!-- Marco 25 (Destaque Rosa) -->
+            <div class="timeline-item">
+                <div class="timeline-badge pink-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date pink-text">04/06/2026 > 05/06/2026</span>
+                    <p class="timeline-text">Você leu, (2009), e disse que quer se afastar...<br>Você não tem ideia da dor que isso meu causou pra eu responder somente com uma frase.<br>Me expressei abertamente pra tentar salvar o minimo que eu consiga do que a gente tem.<br><br><strong>"Acredito que ja decidi mesmo, e vou parar de ser imatura e dar sinais" confusos e ser direta mesmo"</strong><br><br>O que isso significa? Que você abriu mão dos seus sentimentos?<br> O que raios eu deveria entender com isso? Você me tratou como os outros, sendo que eu te mostrei não ser igual a eles...<br><br>Doeu</p>
+                </div>
+            </div>
+
+            <!-- Marco 26 (Destaque Rosa) -->
+            <div class="timeline-item">
+                <div class="timeline-badge pink-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date pink-text">05/06/2026</span>
+                    <p class="timeline-text">Aniversário do Chico;<br>Não tava bem ali, depois de tudo que foi dito de madrugada, por isso meu silêncio, juntou isso com a loja ruindo e você, por infortunio, fez piada com algo importante pra mim;<br><br>Doeu, de novo</p>
+                </div>
+            </div>
+
+            <!-- Marco 27 -->
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">06/06/2026</span>
+                    <p class="timeline-text">Você viu o site, ja vinha planejamento ele há algum tempo; só não sabia que ia usar ele pra expor tudo isso...<br>Mas foi bom de certa forma; ainda aguardo vc saber oq sente ou não por mim; se quer levar isso a frente ou deixar nossa amizade em um nivel acima do normal, mas abaixo do sério.<br>Enquanto isso, tento lidar com o que sinto, espero não ser tarde quando vc estiver pronta.</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">08/06/2026</span>
+                    <p class="timeline-text">Conversamos sobre seu insta, recuperei suas fotos antigas usando meios não tão legais assim... mas oq importa é vc ter suas coisinhas!
+                        <br>
+                        Vi suas intenções com a tinta, sutil e discreto, penso sobre te chamar pra passar um tempo cmg daq uns dias que o povo aqui vai viajar...
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge pink-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date pink-text">09/06/2026</span>
+                    <p class="timeline-text">Você disse que estava "com raiva, tesão e medo"; não entendi oq quis dizer com isso, esperei sua resposta sobre mas ela nunca chegou.
+                        <br>
+                        Pensei melhor em te chamar pra cá e não achei uma boa ideia, não depois disso, mas verei se vc diz algo sobre.
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge pink-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date pink-text">09/06/2026</span>
+                    <p class="timeline-text">Arrisquei falar sobre antes que vc evadisse do assunto;<br>
+                        Vc não disse que ainda gosta de mim diretamente mas deixou a entender e isso basta pra mim; mudei de ideia, vou te chamar pra cá sim; e veremos como isso vai ser, suas vontades livres para serem expostas e te deixarei realizar oq bem entende.
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge gold-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date gold-text">11/06/2026</span>
+                    <p class="timeline-text"> Uhm, vc me entendeu MUITO errado.
+                        <br>Eu não faço oq faço só pq quero "te comer", nem gosto de dizer isso, prefiro falar que quero dormir contigo; não vejo isso como algo banal e simplório, mas como uma forma de conexão mais intensa.<br>
+                        Admito que fiquei levemente magoado de vc pensar isso de mim, mas n tiro seu receio de pensar em tal cenário, é válido.
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge gold-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date gold-text">11/06/2026</span>
+                    <p class="timeline-text"> Pós conversa.
+                        <br>Bom, acho que nos entendemos bem, vc assumiu que não é só saudades que sente de mim.
+                        <br>E eu fiz minhas movimentações em relação a isso, vc correspondeu, achei que não fosse, não agora, mas tudo bem kkkk.
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge pink-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date pink-text">12/06/2026</span>
+                    <p class="timeline-text"> Valentines Day!
+                        <br>Fiz algo bonitinho pra vc não passar o dia sem receber algo.
+                        <br>Eu prestei atenção noq vc disse e já queria fazer algo, mas não sabia o que.
+                        <br>Fico feliz que tenha gostado.
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge pink-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date pink-text">12/06/2026</span>
+                    <p class="timeline-text"> Valentines Day!
+                        <br>Fiz algo bonitinho pra vc não passar o dia sem receber algo.
+                        <br>Eu prestei atenção noq vc disse e já queria fazer algo, mas não sabia o que.
+                        <br>Fico feliz que tenha gostado.
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge gold-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date gold-text">12/06/2026</span>
+                    <p class="timeline-text"> Convite feito.
+                        <br>Deixei bem por cima pra ver se vc dizia algo...
+                        <br>Não disse, tento dnv dps
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge pink-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date pink-text">13/06/2026</span>
+                    <p class="timeline-text"> Convite feito. (De novo)
+                        <br>Agora sim vc aceitou!
+                        <br>Aproveitei pra dizer umas coisinhas que eu tinha pra expor tbm.
+                        <br>Fiquei mais tranquilo que vc escutou e entendeu, agradeço por isso.
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge gold-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date gold-text">14/06/2026</span>
+                    <p class="timeline-text"> Você veio!
+                        <br>Bom, não preciso dizer nada aqui
+                        <br>Já disse tudo pra você quando estavamos juntos.
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge pink-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date pink-text">15/06/2026</span>
+                    <p class="timeline-text"> Sua breve estadia.
+                        <br>Gostei muito do tempo que passamos juntos, mesmo que curtinho, aproveitei o máximo que pude, sua companhia é muito boa.
+                        <br>Achei engraçado vc me xingando por querer ficar com vc ao invés de ir trabalhar, mas aceitando mesmo assim.
+                        <br>Dormir contigo foi uma experiencia reconfortante, espero poder fazer isso novamente.
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">16/06/2026 > 19/06/2026</span>
+                    <p class="timeline-text"> Convivências comuns
+                        <br>Nada muito fora do comum pra se comentar aqui.
+                        <br>No momento sem mais, até a próxima atualização
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge pink-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date pink-text">22/06/2026</span>
+                    <p class="timeline-text"> "???"
+                        <br>Que diabos foi isso? Cara, que porra te deu?
+                        <br>O que foda eu "deveria saber"?
+                        <br>Eu espero muito que isso seja mais um surto sem sentido seu...
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge pink-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date pink-text">26/06/2026</span>
+                    <p class="timeline-text"> É, eu tava certo
+                        <br>Realmente era só um surto
+                        <br>É bom ouvir isso de você, importa muito pra mim
+                        <br>Principalmente escutar que é "não tem como ser falso" mas "não vou assumir" me pega um pouco ainda.
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge gold-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date gold-text">29/06/2026</span>
+                    <p class="timeline-text"> 
+                        <br> Black | Red | Pink
+                        <br>
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">30/06/2026</span>
+                    <p class="timeline-text">Tomei notas sobre teu quadro elétrico, ainda não achei solução plausivel pra ele;
+                        <br>Continuo minhas pesquisas sobre isso pra tentar te ajudar.
+                        <br>
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">01/07/2026</span>
+                    <p class="timeline-text">Diablo?!
+                        <br>Tive q me controlar pra não nerdar sobre o assunto.
+                        <br>Mas é divertido saber que vc tem interesse em coisas nerds
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge pink-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date pink-text">04/07/2026</span>
+                    <p class="timeline-text">Explodi, tava errado e sei disso
+                        <br>Eu tinha vários motivos pra me estressar ali e tava extremamente puto com tudo q tava rolando, oq aconteceu dentro da loja, foi só um reagente a tudo que tava rolando comigo, a indireta da mesa não foi pra você, mas pra quem tava contigo, e agradeço o papel que vc fez de passar a frente;
+                        <br>6 pessoas numa mesa, eram as 6 pessoas que estavam lá; mas não eram necessariamente você(s); mas sim algo que el# postou quando quis dizer a mim isso; tiros trocados não doem
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">06/07/2026</span>
+                    <p class="timeline-text">Você é engraçadinha
+                        <br>Perguntar sobre "oq eu sou pra você?" não é uma forma de me declarar à você, só queria saber oq vc pensa sobre isso tudo;
+                        <br>Sobre mim, você, nós ou algo parecido que nós pudessemos ser; Sei que parece idiota ou algo do tipo mas eu tenho minhas inseguranças sobre isso; sinto que posso ser usado de novo, não que você faria algo assim; desculpa, não sei oq escrever daqui pra frente.
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge pink-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date pink-text">12/07/2026</span>
+                    <p class="timeline-text">Sério...de novo?
+                        <br>Me pergunto o que eu fiz pra merecer ser tratado assim...
+                        <br>"Não vejo a hr de desconhecer todos vocês do mequi, sinceramente."
+                        <br>Porra, depois de todo o tempo que eu passei cntg os momentos que nós dividimos, escutar isso é ridiculamente doloroso.
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge pink-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date pink-text">13/07/2026</span>
+                    <p class="timeline-text">Reconfortante, saber que não sou eu
+                        <br>Pela forma que vc respondeu agora, me sinto mais confortavel.
+                        <br>Ainda sinto um pouco de dor por ficar no meio do fogo cruzado mas, tudo bem, faz parte.
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge purple-dot"></div>
+                <div class="timeline-card">
+                    <span class="timeline-date purple-text">14/07/2026</span>
+                    <p class="timeline-text">Desculpa, queria mesmo ter ido
+                        <br>Tava perto de você, mas esqueci meu celular em casa.
+                        <br>Gosto da sua companhia, me perdoa por não ter aparecido, queria ter te visto tbm.
+                        <br>
+                        </p>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="timeline-footer-note">
+            <div class="timeline-card">
+            <span class="timeline-date gold-text">"você é engraçada"<br> - J</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="image-box">
+        <figure>
+            <img src="https://i.imgur.com/YM6gFfE.png" alt="Foto Grande">
+            <figcaption style="color: #b3b3b3; font-size: 0.8rem; margin-top: 12px; font-style: italic;">
+                Sem legenda mesmo, recordações.
+            </figcaption>
+        </figure>
+    </div>
+    
+    <footer class="main-footer">
+        <p>© 2026 Mafio Inc. Todos os direitos reservados.</p>
+        <p class="footer-sub">Criado com todas as minhas lembranças, lágrimas e sorrisos • Diário</p>
+    </footer>
+
+</div> 
+
+</body>
+</html>
